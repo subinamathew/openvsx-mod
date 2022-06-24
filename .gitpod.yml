@@ -1,0 +1,62 @@
+
+ports:
+# Web UI (static resources)
+- port: 3000
+# Server (API, must be public for CORS)
+- port: 8080
+  visibility: public
+  onOpen: ignore
+
+tasks:
+  - name: frontend 
+    init: |
+      # Build all components
+      yarn --cwd cli
+      yarn --cwd webui
+      yarn --cwd webui build:default
+
+  - name: java
+    before: |
+      cp gitpod/sdkman.etc.config /home/gitpod/.sdkman/etc/config
+      sdk install java 11.0.2-open
+      gp sync-done java
+
+  - name: downloadExtensions
+    init: server/gradlew -p server assemble downloadTestExtensions
+
+  - name: PostgreSQL
+    init: docker pull postgres
+    command: |
+      docker run --name myDB -e POSTGRES_PASSWORD=openvsx -p 5432:5432 -d postgres
+
+  - name: backend
+    command: |
+      gp sync-await java
+      gp ports await 5432
+      cd server
+      ./scripts/generate-properties.sh
+      ./gradlew runServer
+
+  - name: frontend
+    command: |
+      gp ports await 8080
+      cd webui
+      yarn start:default
+
+  - name: Publisher
+    command: |
+      gp ports await 8080
+      # Use the CLI to publish some test extensions to the running server
+      export OVSX_REGISTRY_URL=http://localhost:8080
+      export OVSX_PAT=dz_token
+      export PUBLISHERS="DotJoshJohnson eamodio Equinusocio felixfbecker formulahendry HookyQR ms-azuretools ms-mssql ms-python ms-vscode octref redhat ritwickdey sburg vscode vscodevim Wscats"
+      for pub in $PUBLISHERS; do cli/lib/ovsx create-namespace $pub; done
+      find server/build/test-extensions-builtin -name '*.vsix' -exec cli/lib/ovsx publish '{}' \;
+      find server/build/test-extensions -name '*.vsix' -exec cli/lib/ovsx publish '{}' \;
+
+vscode:
+  extensions:
+    - redhat.java
+    - vscjava.vscode-java-pack
+    - dbaeumer.vscode-eslint
+    - richardwillis.vscode-gradle
