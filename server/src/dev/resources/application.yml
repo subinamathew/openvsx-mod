@@ -6,8 +6,8 @@ spring:
     include: ovsx
   datasource:
     url: jdbc:postgresql://localhost:5432/postgres
-    username: gitpod
-    password: gitpod
+    username: postgres
+    password: openvsx
   jpa:
     open-in-view: false
     properties:
@@ -43,9 +43,9 @@ management:
 
 ovsx:
   databasesearch:
-    enabled: false
+    enabled: true
   elasticsearch:
-    clear-on-start: true
+    enabled: false
   eclipse:
     base-url: https://api.eclipse.org
     publisher-agreement:

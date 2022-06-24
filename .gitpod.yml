@@ -21,8 +21,8 @@ tasks:
       sdk install java 11.0.2-open
       gp sync-done java
 
-  - name: downloadExtensions
-    init: server/gradlew -p server assemble downloadTestExtensions
+#  - name: downloadExtensions
+#    init: server/gradlew -p server assemble downloadTestExtensions
 
   - name: PostgreSQL
     init: docker pull postgres
@@ -48,11 +48,12 @@ tasks:
       gp ports await 8080
       # Use the CLI to publish some test extensions to the running server
       export OVSX_REGISTRY_URL=http://localhost:8080
-      export OVSX_PAT=dz_token
-      export PUBLISHERS="DotJoshJohnson eamodio Equinusocio felixfbecker formulahendry HookyQR ms-azuretools ms-mssql ms-python ms-vscode octref redhat ritwickdey sburg vscode vscodevim Wscats"
-      for pub in $PUBLISHERS; do cli/lib/ovsx create-namespace $pub; done
-      find server/build/test-extensions-builtin -name '*.vsix' -exec cli/lib/ovsx publish '{}' \;
-      find server/build/test-extensions -name '*.vsix' -exec cli/lib/ovsx publish '{}' \;
+      export OVSX_PAT=super_token
+      export PUBLISHERS="oracle"
+#
+#      for pub in $PUBLISHERS; do cli/lib/ovsx create-namespace $pub; done
+#      find server/build/test-extensions-builtin -name '*.vsix' -exec cli/lib/ovsx publish '{}' \;
+#      find server/build/test-extensions -name '*.vsix' -exec cli/lib/ovsx publish '{}' \;
 
 vscode:
   extensions:
